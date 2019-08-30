@@ -1,13 +1,37 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Express</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Charts</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+  <h1>Live Charting</h1>
+  <p>Plotly, mongodb, socket.io</p>
+
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script>
+    const socket = io();
+    socket.on('connection', () => {
+      console.log(`Connected to server`)
+      socket.on('serverMsg', (msg) => console.log(msg))
+      socket.emit('clientMsg', "i'm here")
+    })
+    // socket.on('serverMsg', console.log(msg))
+    // socket.emit('clientMsg', "Hi, there")
+  </script>
+
+
+<!-- var socket = io.connect()
+socket.on('dataObject', function (dataObject) {
+  dataArray.push(dataObject)
+  dataArray.shift()
+  dataset.data(dataArray)
+})  -->
+
 </body>
 
 </html>
