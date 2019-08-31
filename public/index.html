@@ -12,26 +12,21 @@
   <h1>Live Charting</h1>
   <p>Plotly, mongodb, socket.io</p>
 
-  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
+  
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
-    socket.on('connection', () => {
-      console.log(`Connected to server`)
+    let socket = io();
+    socket.on('connect', () => { 
+      console.log(`Connected`)
       socket.on('serverMsg', (msg) => console.log(msg))
       socket.emit('clientMsg', "i'm here")
     })
-    // socket.on('serverMsg', console.log(msg))
-    // socket.emit('clientMsg', "Hi, there")
   </script>
-
-
-<!-- var socket = io.connect()
-socket.on('dataObject', function (dataObject) {
-  dataArray.push(dataObject)
-  dataArray.shift()
-  dataset.data(dataArray)
-})  -->
 
 </body>
 
 </html>
+
+// The socket.on handling within one function does
+// not appear to be correct
