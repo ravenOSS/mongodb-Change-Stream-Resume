@@ -16,17 +16,17 @@
   
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    let socket = io();
+    const socket = io();
     socket.on('connect', () => { 
       console.log(`Connected`)
       socket.on('serverMsg', (msg) => console.log(msg))
-      socket.emit('clientMsg', "i'm here")
+      socket.emit('clientMsg', `I'm here`)
     })
+
   </script>
 
 </body>
 
 </html>
 
-// The socket.on handling within one function does
-// not appear to be correct
+
