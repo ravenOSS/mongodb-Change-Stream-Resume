@@ -12,16 +12,14 @@
   <h1>Live Charting</h1>
   <p>Plotly, mongodb, socket.io</p>
 
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
-  
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
     socket.on('connect', () => { 
       console.log(`Connected`)
+    })
       socket.on('serverMsg', (msg) => console.log(msg))
       socket.emit('clientMsg', `I'm here`)
-    })
 
   </script>
 

@@ -1,5 +1,8 @@
 const server = require('http').createServer()
 const io = require('socket.io')(server)
+const Storage = require('node-storage')
+
+const store = new Storage('/.resumeStore')
 
 io.on('connection', client => {
   console.log(`Client connected: ${client}`)
@@ -34,5 +37,6 @@ client.connect(err => {
   ]
 
   const changeStream = collection.watch(pipeline)
-  changeStream.on('change', change => console.log(`Time: ${change.fullDocument.TimeStamp}, Data: ${change.fullDocument.Data}`))
+  changeStream.on('change', change => console.log(`Time: ${change.fullDocument.TimeStamp}, Data: ${change.fullDocument.Data}, Token: ${change.fullDocument._id}`))
+  store.put('resumeToken', 'change.fullDocument._id')
 })
