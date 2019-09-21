@@ -1,16 +1,17 @@
+const resume = require('./resumeStore')
 const dotenv = require('dotenv').config()
 const server = require('http').createServer()
 const io = require('socket.io')(server)
+const MongoClient = require('mongodb').MongoClient
+const assert = require('assert')
 
 io.on('connection', client => {
   console.log(`Client connected: ${client}`)
   // client.on('event', data => { /* … */ })
   // client.on('disconnect', () => { /* … */ })
 })
-server.listen(3000)
 
-const MongoClient = require('mongodb').MongoClient
-const assert = require('assert')
+server.listen(3000)
 
 const url = process.env.atlasURL
 
@@ -38,68 +39,62 @@ client.connect(err => {
       }
     }
   }
-  // let resumeToken
-  // let token
+
   let changeStream
+  // const resumeToken
+  // const token
 
-  const storeInit = async () => {
-    await storage.init({
-      dir: 'testStore'
+  const gotIt = (data) => {
+    const token = JSON.stringify(data)
+    console.log(`gotIt: ${token}`)
+    return data
+  }
+
+  const startStream = () => {
+    console.log(`startStream`)
+    changeStream = collection.watch([pipeline], {
+      fullDocument: 'updateLookup' })
+    changeStream.on('change', document => {
+      console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
+      const token = document._id
+      resume.storeToken(token)
+      changeStream.close()
+      resumeStream()
     })
   }
-  storeInit()
 
-  getToken()
-    .then(token => {
-      if (typeof token !== 'undefined') {
-        console.log(`Token`)
-        console.log(token)
-        changeStream = collection.watch([pipeline], {
-          fullDocument: 'updateLookup'
-        }, {
-          resumeAfter: token
-        })
-      } else {
-        changeStream = collection.watch([pipeline])
-        changeStream.on('change', document => {
-          console.log(document)
-          const token = document._id
-          saveToken(token)
-        })
-      }
+  const resumeStream = () => {
+    console.log(`resumeStream`)
+    changeStream = collection.watch([pipeline], {
+      fullDocument: 'updateLookup'
+    }, {
+      resumeAfter: resume.getToken(gotIt)
     })
-})
-
-const saveToken = async (token) => {
-  try {
-    const resumeToken = EJSON.stringify(token)
-    await storage.setItem('resumetoken', resumeToken)
-  } catch (err) {
-    console.log(`Error writing token to file`)
+    changeStream.on('change', document => {
+      console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
+      const token = document._id
+      resume.storeToken(token)
+    })
   }
-}
 
-const getToken = async () => {
-  try {
-    const resumeToken = await storage.getItem('resumetoken')
-      .then
-    if (typeof resumeToken !== `undefined`) {
-      return EJSON.parse(resumeToken)
+  const decide = resume.readfile(readable => {
+    if (!readable) {
+      console.log(`Readable: NO - ${readable} `)
+      startStream()
     } else {
-      return 'undefined'
+      console.log(`Readable: YES - ${readable} `)
+      resumeStream()
     }
-  } catch (err) {
-    console.log(`Error reading token file`)
-  }
-}
-
-const newStream = (cs, storage) => {
-  console.log(`New stream started`)
-  cs.on('change', document => {
-    console.log(document)
-    const token = document._id
-    saveToken(token)
-    console.log(`++++++++++++++++++++`)
-    // newStream(cs, storage)
   })
-}
+
+  // const decide = resume.readfile(err => {
+  //   if (err) {
+  //     console.log(`Error: YES - ${err} `)
+  //     startStream()
+  //   } else {
+  //     console.log(`Error: NO - ${err} `)
+  //     resumeStream()
+  //   }
+  // })
+  // decide()
+})
