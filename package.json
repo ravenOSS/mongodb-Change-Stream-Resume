@@ -10,6 +10,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dotenv": "^8.1.0",
+    "esm": "^3.2.25",
     "express": "~4.16.0",
     "moment": "^2.24.0",
     "mongodb": "^3.3.2",
