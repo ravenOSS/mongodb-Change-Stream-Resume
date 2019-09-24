@@ -4,6 +4,8 @@ const server = require('http').createServer()
 const io = require('socket.io')(server)
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
+const BSON = require('bson')
+const EJSON = require('mongodb-extjson')
 
 io.on('connection', client => {
   console.log(`Client connected: ${client}`)
@@ -41,13 +43,22 @@ client.connect(err => {
   }
 
   let changeStream
+  let streamWatch
   // const resumeToken
-  // const token
+  // let token = ''
 
   const gotIt = (data) => {
-    const token = JSON.stringify(data)
-    console.log(`gotIt: ${token}`)
+    // const token = JSON.stringify(data)
+    // const token = data
+    // const token = EJSON.parse(data)
+    // console.log(`gotIt0: ${(data)}`)
+    console.log(`gotIt1: ${JSON.stringify(data)}`)
     return data
+  }
+
+  const sleep = (delay) => {
+    var start = new Date().getTime()
+    while (new Date().getTime() < start + delay);
   }
 
   const startStream = () => {
@@ -55,29 +66,36 @@ client.connect(err => {
     changeStream = collection.watch([pipeline], {
       fullDocument: 'updateLookup' })
     changeStream.on('change', document => {
+      console.log(`csStartToken:  ${EJSON.stringify(document._id)}`)
+      resume.storeToken(EJSON.stringify(document._id))
       console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
-      const token = document._id
-      resume.storeToken(token)
       changeStream.close()
+      sleep(10000)
+      console.log(`Sleep ended`)
       resumeStream()
     })
   }
 
   const resumeStream = () => {
     console.log(`resumeStream`)
-    changeStream = collection.watch([pipeline], {
+    streamWatch = collection.watch([pipeline], {
       fullDocument: 'updateLookup'
     }, {
-      resumeAfter: resume.getToken(gotIt)
+      // resumeAfter: resume.getToken(gotIt)
+      resumeAfter: resume.getToken()
     })
-    changeStream.on('change', document => {
+    streamWatch.on('change', document => {
+      console.log(`csChange: ${`${EJSON.stringify(document._id)}`}`)
       console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
-      const token = document._id
-      resume.storeToken(token)
+      resume.storeToken(EJSON.stringify(document._id))
     })
+    resumeStream()
   }
 
-  const decide = resume.readfile(readable => {
+  // startStream()
+  // resumeStream()
+
+  resume.readfile(readable => {
     if (!readable) {
       console.log(`Readable: NO - ${readable} `)
       startStream()
@@ -86,15 +104,4 @@ client.connect(err => {
       resumeStream()
     }
   })
-
-  // const decide = resume.readfile(err => {
-  //   if (err) {
-  //     console.log(`Error: YES - ${err} `)
-  //     startStream()
-  //   } else {
-  //     console.log(`Error: NO - ${err} `)
-  //     resumeStream()
-  //   }
-  // })
-  // decide()
 })

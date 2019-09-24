@@ -6,3 +6,7 @@ Therefore, the program executes a two stage start-up. The first stage starts a c
 
 Program logic tests whether a readable resumeToken store exists. If it does NOT, start the "startStream" process to capture and store a resumeToken in local file storage. Close the process and call the "resumeStream" process that will continuously process new events and store new resumeTokens.
 
+Node.js file system handling is used to check for a token store and to write/read the resumeToken.
+
+The code is fairly verbose in outputs to aid in understanding what processes are being executed.
+
