@@ -10,3 +10,5 @@ Node.js file system handling is used to check for a token store and to write/rea
 
 The code is fairly verbose in outputs to aid in understanding what processes are being executed.
 
+changeStreamBasic.js // changeStream without resume capabilitychangeStreamVerbose.js // lots of console.logs
+changeStreamQuiet.js // remove most console.logs

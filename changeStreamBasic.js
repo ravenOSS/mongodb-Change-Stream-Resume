@@ -1,4 +1,4 @@
-const resume = require('./resumeStore')
+const resume = require('./resumeStoreVerb')
 const dotenv = require('dotenv').config()
 const server = require('http').createServer()
 const io = require('socket.io')(server)
@@ -57,6 +57,7 @@ client.connect(err => {
   }
 
   const sleep = (delay) => {
+    console.log(`Sleeping`)
     var start = new Date().getTime()
     while (new Date().getTime() < start + delay);
   }
@@ -70,30 +71,45 @@ client.connect(err => {
       resume.storeToken(EJSON.stringify(document._id))
       console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
       changeStream.close()
-      sleep(10000)
+      sleep(6000)
       console.log(`Sleep ended`)
       resumeStream()
     })
   }
 
+  // const startStream = () => {
+  //   changeStream = collection.watch([pipeline], {
+  //     fullDocument: 'updateLookup' })
+  //   changeStream.on('change', document => {
+  //     resume.storeToken(EJSON.stringify(document._id))
+  //     changeStream.close()
+  //     resumeStream()
+  //   })
+  // }
+
   const resumeStream = () => {
     console.log(`resumeStream`)
+    sleep(11000)
     streamWatch = collection.watch([pipeline], {
-      fullDocument: 'updateLookup'
-    }, {
       // resumeAfter: resume.getToken(gotIt)
       resumeAfter: resume.getToken()
     })
     streamWatch.on('change', document => {
-      console.log(`csChange: ${`${EJSON.stringify(document._id)}`}`)
+      console.log(`csChangeId: ${`${EJSON.stringify(document._id)}`}`)
       console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
       resume.storeToken(EJSON.stringify(document._id))
     })
-    resumeStream()
   }
 
-  // startStream()
-  // resumeStream()
+  // const resumeStream = () => {
+  //   streamWatch = collection.watch([pipeline], {
+  //     resumeAfter: resume.getToken()
+  //   })
+  //   streamWatch.on('change', document => {
+  //     console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
+  //     resume.storeToken(EJSON.stringify(document._id))
+  //   })
+  // }
 
   resume.readfile(readable => {
     if (!readable) {
