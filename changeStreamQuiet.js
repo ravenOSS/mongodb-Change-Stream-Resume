@@ -4,7 +4,6 @@ const server = require('http').createServer()
 const io = require('socket.io')(server)
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
-const BSON = require('bson')
 const EJSON = require('mongodb-extjson')
 
 io.on('connection', client => {
@@ -26,7 +25,7 @@ const client = new MongoClient(url, {
 })
 
 client.connect(err => {
-  assert.strict.equal(null, err)
+  assert.strictEqual(null, err)
   if (err) {
     console.log(`We've got a problem`)
   } else {

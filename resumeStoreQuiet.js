@@ -1,8 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const BSON = require('bson')
 const EJSON = require('mongodb-extjson')
-// sets root as current working directory and creates token store
+// sets root as current working directory to create token store
 const file = path.join(process.cwd(), '/storeQ')
 
 // Check if the file exists in the current directory.
@@ -26,21 +25,9 @@ const readfile = (callback) => {
 const storeToken = (resumeToken) => {
   fs.writeFileSync(file, resumeToken)
   console.log(`rsToken stored`)
-  // fs.writeFile(file, JSON.stringify(resumeToken), 'utf8', (err) => {
-  // fs.writeFile(file, BSON.serialize(resumeToken), (err) => {
-  // fs.writeFileSync(file, EJSON.stringify(resumeToken), (err) => {
 }
-// const storeToken = (resumeToken) => {
-//   fs.writeFileSync(file, resumeToken, 'utf8', (err) => {
-//     if (err) throw err
-//     console.log(`rsToken stored`)
-//   // fs.writeFile(file, JSON.stringify(resumeToken), 'utf8', (err) => {
-//   // fs.writeFile(file, BSON.serialize(resumeToken), (err) => {
-//   // fs.writeFileSync(file, EJSON.stringify(resumeToken), (err) => {
-//   })
-// }
+
 let resumeToken
-let bsonToken
 let token
 
 const getToken = () => {
@@ -48,26 +35,6 @@ const getToken = () => {
   resumeToken = EJSON.parse(token)
   console.log(`rsToken: ${JSON.stringify(resumeToken)}`)
   return resumeToken
-
-  // console.log(`rsToken: ${EJSON.parse(token)}`)
-  // resumeToken = JSON.parse(token)
-  // bsonToken = BSON.deserialize(token)
-  // resumeToken = token
 }
-// const getToken = (callback) => {
-//   // fs.readFile(file, 'utf8', (err, token) => {
-//     if (err) throw err
-//     resumeToken = EJSON.parse(token)
-//     console.log(`rsToken: ${JSON.stringify(resumeToken)}`)
-//     callback(resumeToken)
-
-//     // console.log(`rsToken: ${EJSON.parse(token)}`)
-//     // resumeToken = JSON.parse(token)
-//     // bsonToken = BSON.deserialize(token)
-//     // resumeToken = token
-
-//     // callback(bsonToken)
-//   })
-// }
 
 module.exports = { getToken, storeToken, readfile }

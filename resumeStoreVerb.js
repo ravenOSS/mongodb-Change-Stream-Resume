@@ -1,20 +1,20 @@
 const fs = require('fs')
 const path = require('path')
-const BSON = require('bson')
 const EJSON = require('mongodb-extjson')
 // sets root as current working directory and creates token store
-const file = path.join(process.cwd(), '/storeV')
+const file = path.join(process.cwd(), '/storeV') // just put token store in process root dir
 
 // Check if the file exists in the current directory.
 fs.access(file, fs.constants.F_OK, (err) => {
-  console.log(`${file} ${err ? 'does not exist' : 'exists'}`)
+  console.log(`rsExistence check: ${file} ${err ? 'does not exist' : 'exists'}`)
 })
 
 // Check if the file is readable.
 // We'll use this for testing the presence of a token
-// niavely accept the file has token
+// naively accept the file has token if readable
+// Use node.js fs module
 const readfile = (callback) => {
-  fs.access(file, fs.constants.R_OK, (err) => {
+  fs.access(file, fs.constants.F_OK || fs.constants.R_OK, (err) => {
     // const readable = err ? false : true
     const readable = err ? 0 : 1
     console.log(`rsFileStatus: ${readable}`)
@@ -22,30 +22,20 @@ const readfile = (callback) => {
     callback(readable)
   })
 }
-// Using writeFile is unreliable - see docs
+
 const storeToken = (resumeToken) => {
-  fs.writeFileSync(file, resumeToken)
-  console.log(`rsToken stored`)
-  // fs.writeFile(file, JSON.stringify(resumeToken), 'utf8', (err) => {
-  // fs.writeFile(file, BSON.serialize(resumeToken), (err) => {
-  // fs.writeFileSync(file, EJSON.stringify(resumeToken), (err) => {
+  fs.writeFile(file, resumeToken, (error) => {
+    if (error) {
+      console.error('Error while writing token file')
+    } else {
+      console.error('rsResumeToken saved')
+    }
+  })
 }
-// const storeToken = (resumeToken) => {
-//   fs.writeFileSync(file, resumeToken, 'utf8', (err) => {
-//     if (err) throw err
-//     console.log(`rsToken stored`)
-//   // fs.writeFile(file, JSON.stringify(resumeToken), 'utf8', (err) => {
-//   // fs.writeFile(file, BSON.serialize(resumeToken), (err) => {
-//   // fs.writeFileSync(file, EJSON.stringify(resumeToken), (err) => {
-//   })
-// }
-let resumeToken
-let bsonToken
-let token
 
 const getToken = () => {
-  token = fs.readFileSync(file)
-  resumeToken = EJSON.parse(token)
+  const token = fs.readFileSync(file)
+  const resumeToken = EJSON.parse(token)
   console.log(`rsToken: ${JSON.stringify(resumeToken)}`)
   return resumeToken
 
@@ -54,20 +44,19 @@ const getToken = () => {
   // bsonToken = BSON.deserialize(token)
   // resumeToken = token
 }
+
 // const getToken = (callback) => {
-//   // fs.readFile(file, 'utf8', (err, token) => {
-//     if (err) throw err
-//     resumeToken = EJSON.parse(token)
-//     console.log(`rsToken: ${JSON.stringify(resumeToken)}`)
-//     callback(resumeToken)
+//   fs.readFile(file, 'utf8',
+//     (error, resumeToken) => {
+//       if (error) {
+//         console.error('Error while reading token file')
+//       } else {
+//         console.log(`rsGetToken: ${resumeToken}`)
 
-//     // console.log(`rsToken: ${EJSON.parse(token)}`)
-//     // resumeToken = JSON.parse(token)
-//     // bsonToken = BSON.deserialize(token)
-//     // resumeToken = token
-
-//     // callback(bsonToken)
-//   })
+//         callback(EJSON.parse(resumeToken))
+//         // callback(EJSON.parse(resumeToken))
+//       }
+//     })
 // }
 
 module.exports = { getToken, storeToken, readfile }

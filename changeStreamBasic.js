@@ -4,7 +4,6 @@ const server = require('http').createServer()
 const io = require('socket.io')(server)
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
-const BSON = require('bson')
 const EJSON = require('mongodb-extjson')
 
 io.on('connection', client => {
@@ -26,7 +25,7 @@ const client = new MongoClient(url, {
 })
 
 client.connect(err => {
-  assert.strict.equal(null, err)
+  assert.strictEqual(null, err)
   if (err) {
     console.log(`We've got a problem`)
   } else {
@@ -47,21 +46,6 @@ client.connect(err => {
   // const resumeToken
   // let token = ''
 
-  const gotIt = (data) => {
-    // const token = JSON.stringify(data)
-    // const token = data
-    // const token = EJSON.parse(data)
-    // console.log(`gotIt0: ${(data)}`)
-    console.log(`gotIt1: ${JSON.stringify(data)}`)
-    return data
-  }
-
-  const sleep = (delay) => {
-    console.log(`Sleeping`)
-    var start = new Date().getTime()
-    while (new Date().getTime() < start + delay);
-  }
-
   const startStream = () => {
     console.log(`startStream`)
     changeStream = collection.watch([pipeline], {
@@ -71,7 +55,6 @@ client.connect(err => {
       resume.storeToken(EJSON.stringify(document._id))
       console.log(`${document.fullDocument.TimeStamp} : ${document.fullDocument.Data}`)
       changeStream.close()
-      sleep(6000)
       console.log(`Sleep ended`)
       resumeStream()
     })
@@ -89,7 +72,6 @@ client.connect(err => {
 
   const resumeStream = () => {
     console.log(`resumeStream`)
-    sleep(11000)
     streamWatch = collection.watch([pipeline], {
       // resumeAfter: resume.getToken(gotIt)
       resumeAfter: resume.getToken()
