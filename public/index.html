@@ -6,22 +6,45 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Charts</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font: 13px Helvetica, Arial; }
+    form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+    form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+    form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+    #messages { list-style-type: none; margin: 0; padding: 0; }
+    #messages li { padding: 5px 10px; }
+    #messages li:nth-child(odd) { background: #eee; }
+  </style>
+
 </head>
 
 <body>
   <h1>Live Charting</h1>
   <p>Plotly, mongodb, socket.io</p>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    socket.on('connect', () => { 
-      console.log(`Connected`)
-    })
-      socket.on('serverMsg', (msg) => console.log(msg))
-      socket.emit('clientMsg', `I'm here`)
+  <ul id="messages"></ul>
+  <form action="">
+    <input id="m" autocomplete="off" /><button>Send</button>
+  </form>
 
-  </script>
+<script>
+  $( () => {
+    var socket = io();
+    $('form').submit( e => {
+      e.preventDefault(); // prevents page reloading
+      socket.emit('clientMsg', $('#m').val());
+      $('#m').val('');
+      return false;
+    });
+    socket.on('serverMsg', function(msg){
+      $('#messages').append($('<li>').text(msg));
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+  });
+</script>
 
 </body>
 

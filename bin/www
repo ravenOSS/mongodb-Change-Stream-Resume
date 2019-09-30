@@ -5,8 +5,9 @@
  */
 
 var app = require('../app')
+// require('../socketConn')
+// require('../changeStreamBasic')
 var debug = require('debug')('plotlychangestream:server')
-// var http = require('http')
 
 /**
  * Get port from environment and store in Express.
@@ -21,19 +22,23 @@ app.set('port', port)
 
 const server = require('http').createServer(app)
 
-/**
- * Create socket.io instance
- */
+// /**
+//  * Create socket.io instance
+//  */
 const io = require('socket.io')(server)
 
-io.on('connect', (socket) => {
+io.on('connection', socket => {
   console.log(`Client connected: ${socket.id}`)
-})
-io.emit('serverMsg', 'Hello client')
-io.on('clientMsg', (msg) => {
-  console.log(`Client message: ${msg}`)
+  socket.emit('serverMsg', 'Hello client, again')
+  socket.on('clientMsg', (msg) => {
+    console.log(`Client message: ${msg}`)
+  })
 })
 
+const transmit = data => {
+  io.emit('serverMsg', data)
+  console.log(`Data emitted`)
+}
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -61,6 +66,60 @@ function normalizePort (val) {
 
   return false
 }
+// ===================================================
+const dotenv = require('dotenv').config()
+const MongoClient = require('mongodb').MongoClient
+// const io = require('socket.io')
+const assert = require('assert')
+const EJSON = require('mongodb-extjson')
+
+const atlasURL = process.env.atlasURL
+
+const client = new MongoClient(atlasURL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  keepAlive: true,
+  connectTimeoutMS: 60000,
+  socketTimeoutMS: 60000
+})
+
+client.connect(err => {
+  assert.strictEqual(null, err)
+  if (err) {
+    console.log(`We've got a problem`)
+  } else {
+    console.log('Connected successfully to MongoDB')
+  }
+  const db = client.db('plottingData')
+  const collection = db.collection('streamTest')
+  const pipeline = {
+    $match: {
+      operationType: {
+        $in: ['insert']
+      }
+    }
+  }
+
+  let changeStream
+
+  const startStream = () => {
+    console.log(`startStream`)
+    changeStream = collection.watch([pipeline], {
+      fullDocument: 'updateLookup' })
+    changeStream.on('change', document => {
+      const packet = []
+      packet[0] = document.fullDocument.TimeStamp
+      packet[1] = document.fullDocument.Data
+      transmit(packet)
+    })
+  }
+  startStream()
+
+  // const transmit = (data) => {
+  //   console.log(`packet: ${data}`)
+  // }
+})
+//=============================================
 
 /**
  * Event listener for HTTP server "error" event.

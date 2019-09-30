@@ -78,6 +78,20 @@ client.connect(err => {
     })
   }
 
+  io.on('connection', function (socket) {
+    console.log(socket.id)
+  
+    oplog.on('insert', function (doc) {
+      console.log('TS', doc.o.TimeStamp)
+      console.log('D', doc.o.Data)
+      var dataObject = {
+        TimeStamp: doc.o.TimeStamp,
+        Data: doc.o.Data
+      }
+      socket.emit('dataObject', dataObject)
+    })
+  })
+
   resume.readfile(readable => {
     if (!readable) {
       console.log(`Readable: NO - ${readable} `)
