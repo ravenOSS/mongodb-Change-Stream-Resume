@@ -37,7 +37,7 @@ io.on('connection', socket => {
 
 const transmit = data => {
   io.emit('serverMsg', data)
-  console.log(`Data emitted`)
+  console.log(`Data emitted: ${data}`)
 }
 /**
  * Listen on provided port, on all network interfaces.

@@ -25,12 +25,12 @@ client.connect(err => {
   const db = client.db('plottingData')
 
   setInterval(() => {
-    const now = moment().format('MMM Do, h:mm:ss')
+    const now = moment().format()
     console.log(`Time: ${now}`)
     const data = Math.round(Math.random() * 100)
     console.log(`Data: ${data}`)
     insertData(now, data)
-  }, 5000)
+  }, 3500)
 
   const insertData = (time, data) => {
     // Set the collection
